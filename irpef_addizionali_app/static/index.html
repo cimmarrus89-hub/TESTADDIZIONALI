@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calcolatore Addizionali IRPEF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">AI</div>
+      <div class="title">
+        <h1>Calcolatore Addizionali IRPEF</h1>
+        <p class="subtitle">Dati ufficiali MEF – aggiornamento automatico ogni 15 giorni</p>
+      </div>
+    </div>
+    <div id="status" class="status"></div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Simulazione</h2>
+      <form id="calc-form" onsubmit="return false;">
+        <div class="grid">
+          <div class="field">
+            <label for="imponibile">Reddito imponibile</label>
+            <div class="input-prefix">
+              <span>€</span>
+              <input id="imponibile" type="number" min="0" step="100" placeholder="es. 32.500" required>
+            </div>
+            <small class="hint">Importo annuo complessivo imponibile ai fini IRPEF.</small>
+          </div>
+
+          <div class="field">
+            <label for="regione">Regione</label>
+            <select id="regione" required></select>
+          </div>
+
+          <div class="field">
+            <label for="comune">Comune</label>
+            <select id="comune" required disabled></select>
+            <small class="hint">Seleziona prima la regione.</small>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="calcola" class="btn primary">Calcola</button>
+          <button id="reset" class="btn">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="risultato" class="card hidden">
+      <h2>Risultato</h2>
+      <div class="result-grid">
+        <div class="result-box">
+          <h3>Comunale</h3>
+          <div id="res-comunale" class="result"></div>
+        </div>
+        <div class="result-box">
+          <h3>Regionale</h3>
+          <div id="res-regionale" class="result"></div>
+        </div>
+        <div class="result-box total">
+          <h3>Totale addizionali</h3>
+          <div id="res-totale" class="total-amount">€ 0,00</div>
+        </div>
+      </div>
+      <div id="note" class="notes"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>
+      <strong>Fonte:</strong> Dipartimento delle Finanze – Elenchi generali aggiornati quotidianamente (CSV).
+    </div>
+    <div>
+      Questo strumento applica le regole MEF (aliquota unica/esenzione/scaglioni) e allinea gli scaglioni locali a quelli IRPEF nazionali dell’anno.
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
