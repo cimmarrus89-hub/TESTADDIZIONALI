@@ -379,8 +379,8 @@
       L.tileLayer('tiles/{z}/{x}/{y}.jpg', { minZoom: 11, maxNativeZoom: 14, maxZoom: 16, attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, OpenStreetMap contributors' }).addTo(S.map);
       S.map.setMinZoom(11);
     } else {
-      (S.settings.basemap === 'gray' ? gray : S.settings.basemap === 'street' ? street : osm).addTo(S.map);
-      L.control.layers({ 'OpenStreetMap': osm, 'Grigio chiaro (Esri)': gray, 'Stradale (Esri)': street }, null, { position: 'topright', collapsed: true }).addTo(S.map);
+      (S.settings.basemap === 'gray' ? gray : S.settings.basemap === 'osm' ? osm : street).addTo(S.map); // predefinito Esri: i tile OSM bloccano l'app (403, tile usage policy)
+      L.control.layers({ 'Stradale (Esri)': street, 'Grigio chiaro (Esri)': gray, 'OpenStreetMap': osm }, null, { position: 'topright', collapsed: true }).addTo(S.map);
       S.map.on('baselayerchange', (e) => { S.settings.basemap = e.layer === gray ? 'gray' : e.layer === street ? 'street' : 'osm'; persist(); });
     }
     const C = Course.data; if (!C) return;
