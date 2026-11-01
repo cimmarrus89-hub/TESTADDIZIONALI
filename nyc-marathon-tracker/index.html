@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b3a6b">
+<meta name="description" content="Segui in diretta i maratoneti della TCS New York City Marathon 2026: mappa del percorso, passaggi ufficiali NYRR, previsioni di arrivo e confronto con i leader.">
+<title>NYC Marathon 2026 · Tracker live</title>
+<link rel="stylesheet" href="css/leaflet.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app-root">
+<header class="topbar">
+  <div class="brand"><span class="logo">🗽</span><div><h1>NYC Marathon 2026 <span class="live-dot" title="Aggiornamento automatico"></span></h1><div class="sub" id="event-name">TCS New York City Marathon · domenica 1 novembre 2026</div></div></div>
+  <div class="clocks">
+    <div class="clock"><span class="lbl">New York</span><span id="clock-ny">--:--:--</span></div>
+    <div class="clock"><span class="lbl">Italia</span><span id="clock-it">--:--:--</span></div>
+    <div class="clock phase"><span class="lbl">Gara</span><span id="race-phase">–</span></div>
+  </div>
+  <div class="controls">
+    <div class="mode-switch" role="group" aria-label="Modalità"><button id="mode-live" class="mode active" title="Dati reali NYRR">Live</button><button id="mode-sim" class="mode" title="Gara simulata per provare il sito">Simulazione</button></div>
+    <button id="btn-refresh" class="icon-btn" title="Aggiorna adesso" aria-label="Aggiorna adesso">⟳</button>
+    <button id="btn-settings" class="icon-btn" title="Impostazioni" aria-label="Impostazioni">⚙</button>
+    <button id="help-toggle" class="icon-btn" title="Come funziona" aria-label="Come funziona">?</button>
+  </div>
+</header>
+<div id="status-bar" class="status-bar"><span id="status-text">Inizializzazione…</span><span id="status-timer"></span></div>
+<div id="artifact-note" class="help hidden"><b>Come funziona qui.</b> Questa pagina non può chiamare direttamente i risultati NYRR: durante la gara Claude li interroga ogni minuto circa e aggiorna un “ponte dati” collegato alla pagina. La ricerca di un runner passa dal ponte (risposta entro un paio di minuti); i runner seguiti e i leader vengono poi aggiornati da soli. Tieni la pagina aperta.</div>
+<div id="help" class="help hidden">
+  <b>Come funziona.</b> Cerca un maratoneta per nome o pettorale e premi <i>Segui</i>. I passaggi ufficiali (5 km, 10 km, mezza, …) arrivano dai sensori NYRR; tra un passaggio e l'altro la posizione sulla mappa è una <b>stima</b> basata sul passo recente, quindi può differire di qualche centinaio di metri. La partenza di ogni onda è diversa: se la conosci, impostala nel pannello del runner per una stima più precisa. Le corone 👑 sono i leader uomini/donne; il fantasma 👻 mostra dove sarebbe il record del percorso. La <i>Simulazione</i> usa una gara finta per provare tutto prima del via (cerca “Michele” o 26210).
+</div>
+<main class="layout" data-tab="map">
+  <aside class="panel left">
+    <section class="card">
+      <h2>Cerca un maratoneta</h2>
+      <form id="search-form" class="search"><input id="search-input" type="search" placeholder="Nome, cognome o pettorale" autocomplete="off" aria-label="Cerca"><button class="btn primary" type="submit">Cerca</button></form>
+      <div class="hint">Esempi: “Rossi”, “Maria Bianchi”, “12345”. I nomi degli iscritti sono pubblici sui risultati NYRR.</div>
+      <ul id="search-results" class="result-list"></ul>
+    </section>
+    <section class="card">
+      <h2>I tuoi maratoneti <span id="followed-count" class="badge"></span></h2>
+      <ul id="followed-list" class="followed-list"></ul>
+      <div id="followed-empty" class="empty">Nessun maratoneta seguito: cerca e premi “Segui”.</div>
+    </section>
+    <section class="card">
+      <h2>In testa alla gara</h2>
+      <div id="leaders" class="leaders"></div>
+    </section>
+  </aside>
+  <section class="map-wrap">
+    <div id="map" role="application" aria-label="Mappa del percorso"></div>
+    <div class="map-toolbar">
+      <label><input type="checkbox" id="opt-follow"> Segui il runner</label>
+      <label><input type="checkbox" id="opt-miles"> Miglia</label>
+      <label><input type="checkbox" id="opt-leaders"> Leader 👑</label>
+      <label><input type="checkbox" id="opt-record"> Fantasma record 👻</label>
+    </div>
+    <div id="sim-controls" class="sim-controls hidden">
+      <span class="sim-label">Simulazione</span><span id="sim-time" class="sim-time">–</span>
+      <span class="sim-group">Velocità: <button class="sim-speed" data-speed="1">1×</button><button class="sim-speed active" data-speed="10">10×</button><button class="sim-speed" data-speed="60">60×</button><button class="sim-speed" data-speed="300">300×</button></span>
+      <span class="sim-group">Salta: <button class="sim-jump" data-min="15">+15 min</button><button class="sim-jump" data-min="60">+1 h</button></span>
+      <span class="sim-group">Ora NY: <input id="sim-timeinput" type="time" value="10:30"><button id="sim-set">Vai</button></span>
+    </div>
+  </section>
+  <aside class="panel right">
+    <div id="runner-detail" class="detail"></div>
+  </aside>
+</main>
+<nav class="tabbar" aria-label="Sezioni"><button data-tab="search">🔍 Cerca</button><button data-tab="map" class="active">🗺️ Mappa</button><button data-tab="runner">🏃 Runner</button></nav>
+<div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="modal-box">
+    <h2 id="settings-title">Impostazioni</h2>
+    <label>Aggiornamento automatico ogni <input id="set-refresh" type="number" min="15" max="600" step="5"> secondi</label>
+    <label>Codice evento NYRR (vuoto = automatico, es. <code>M2026</code>) <input id="set-event" type="text" placeholder="automatico"></label>
+    <label>Pettorali élite da controllare per i leader (1–N uomini, 101–100+N donne) <input id="set-pool" type="number" min="5" max="60"></label>
+    <div class="hint">API in uso: <code id="set-apibase"></code>. Se le chiamate dirette non funzionano, avvia <code>node server.js</code> e apri <code>http://localhost:8080</code>: il proxy viene usato automaticamente.</div>
+    <div class="modal-actions"><button class="btn ghost" id="settings-reset">Azzera dati salvati</button><span class="spacer"></span><button class="btn ghost" id="settings-close">Annulla</button><button class="btn primary" id="settings-save">Salva</button></div>
+  </div>
+</div>
+<footer class="foot">Dati gara: risultati ufficiali NYRR (results.nyrr.org). Mappa: © OpenStreetMap contributors; sfondi alternativi © Esri. Tracciato ricostruito con OpenStreetMap e Valhalla: le posizioni tra un passaggio e l'altro sono stimate. Progetto amatoriale non affiliato a NYRR.</footer>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="js/util.js"></script>
+<script src="js/course.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/chart.js"></script>
+<script src="js/nyrr.js"></script>
+<script src="js/live.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/dbprovider.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
