@@ -40,6 +40,18 @@
         });
       });
     }
+    var cifra = document.querySelector(".ring__num .js-firme");
+    if (cifra && !fermo && window.requestAnimationFrame) {
+      var inizio = null, durata = 1400;
+      var passo = function (ora) {
+        if (inizio === null) inizio = ora;
+        var k = Math.min((ora - inizio) / durata, 1);
+        var morbido = 1 - Math.pow(1 - k, 3);
+        cifra.textContent = numero(Math.round(firme * morbido));
+        if (k < 1) requestAnimationFrame(passo);
+      };
+      requestAnimationFrame(passo);
+    }
     var titolo = document.getElementById("ring-t");
     if (titolo) titolo.textContent = numero(firme) + " firme raccolte su " + numero(obiettivo);
   }
@@ -51,8 +63,7 @@
     var giorni = Math.round((Date.UTC(scadenza[0], scadenza[1] - 1, scadenza[2]) -
       Date.UTC(oggi.getFullYear(), oggi.getMonth(), oggi.getDate())) / 86400000);
     if (giorni > 1) {
-      scrivi(".js-giorni", String(giorni));
-      scrivi(".js-giorni-testo", "giorni per firmare, fino all'11 marzo 2027");
+      scrivi(".js-giorni-frase", "Restano " + giorni + " giorni: la raccolta chiude l'11 marzo 2027.");
     }
   }
 
